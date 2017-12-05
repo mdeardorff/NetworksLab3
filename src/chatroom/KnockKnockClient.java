@@ -32,6 +32,7 @@ public class KnockKnockClient {
                 if (fromUser != null) {
                     out.println(fromUser);
                 }
+
             }
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);

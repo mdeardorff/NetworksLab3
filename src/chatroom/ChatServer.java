@@ -1,12 +1,16 @@
 package chatroom;
 
+import sun.plugin2.message.Message;
+
 import java.lang.reflect.Array;
 import java.net.*;
 import java.io.*;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.security.MessageDigest;
 
 public class ChatServer {
 
@@ -33,6 +37,7 @@ public class ChatServer {
                 fr = new FileReader(FILENAME);
             }
             else {
+                System.out.println("No user file found. Creating one.");
                 file.createNewFile();
                 fr = new FileReader(file);
             }
@@ -41,7 +46,12 @@ public class ChatServer {
             String currentLine;
             while ((currentLine = br.readLine()) != null) {
                 String splitLine[] = currentLine.split(",");
-                userInfo.put(splitLine[0], splitLine[1]);
+                try {
+                    MessageDigest md =  MessageDigest.getInstance("MD5");
+                    byte[] bytesOfPass = splitLine[1].getBytes("UTF-8");
+                    userInfo.put(splitLine[0], md.digest(bytesOfPass));
+                } catch(NoSuchAlgorithmException e) {}
+
             }
             fr.close();
 
@@ -100,7 +110,14 @@ public class ChatServer {
                         userInfo.put(tokenizedLine[1], tokenizedLine[2]);
                         FileWriter fw = new FileWriter(FILENAME, true);
                         BufferedWriter bw = new BufferedWriter(fw);
-                        bw.append(tokenizedLine[1] + "," + tokenizedLine[2]);
+                        byte[] digestedPass = null;
+                        try {
+                            MessageDigest md = MessageDigest.getInstance("MD5");
+                            byte[] bytesOfPass = tokenizedLine[2    ].getBytes("UTF-8");
+                            digestedPass = md.digest(bytesOfPass);
+                        } catch (NoSuchAlgorithmException e) {}
+
+                        bw.append(tokenizedLine[1] + "," + digestedPass);
                         bw.newLine();
                         bw.close();
                         System.out.println("Created user " + tokenizedLine[1]);
